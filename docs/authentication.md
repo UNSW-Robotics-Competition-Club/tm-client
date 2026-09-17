@@ -368,7 +368,7 @@ Three details cause nearly all signing failures:
 
 - **The trailing newline.** Drop it and TM answers a bare 401 with no explanation. It is
   the single most common mistake in this API, which is why it is checked first in the
-  `invalid_signature` remedy and why `tm-cli sign` prints `trailing newline: present`.
+  `invalid_signature` remedy, and what `tm-cli sign` gives you to compare against.
 - **`host` keeps the port** when it is not the scheme default. The library builds it from
   WHATWG's `url.host` (not `url.hostname`), so `:8080` is signed and `:80` is not. Losing
   the port between the address you configured and the address you called is an instant,
@@ -442,7 +442,7 @@ TM's 401 says nothing, so work in this order.
        --token BEARER --date "Tue, 11 Aug 2026 03:14:00 GMT" --api-key KEY
    escaped:    GET\n/api/event\ntoken:BEARER\nhost:192.168.1.50:8080\nx-tm-date:Tue, 11 Aug 2026 03:14:00 GMT\n
    bytes:      91
-   trailing newline: present
+   lines:      5, ending with a newline (compare yours)
 
    --- begin canonical string ---
    GET

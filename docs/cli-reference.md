@@ -575,7 +575,7 @@ $ tm-cli sign --api-key TESTAPIKEY0123456789 \
     --date 'Tue, 11 Aug 2026 03:14:00 GMT'
 escaped:    GET\n/api/event\ntoken:abc123\nhost:127.0.0.1:8151\nx-tm-date:Tue, 11 Aug 2026 03:14:00 GMT\n
 bytes:      88
-trailing newline: present
+lines:      5, ending with a newline (compare yours)
 
 --- begin canonical string ---
 GET
@@ -593,9 +593,9 @@ trailing newline is the single most common cause of a 401. Since it is invisible
 output, this command prints an escaped form alongside the raw one and states the byte
 length, so the difference is something you can actually see.
 
-The `trailing newline:` line will always say `present` here — this command builds the
-string with the library's own `stringToSign`, which cannot omit it. Its value is as a
-reference: the escaped form and the byte count are what you compare your *other*
+The `lines:` line states the canonical form rather than checking your input — this command
+builds the string with the library's own `stringToSign`, which cannot get it wrong. Its
+value is as a reference: the escaped form and the byte count are what you compare your *other*
 implementation's canonical string against, whether that is a shell script, a Python
 prototype or a colleague's guess. If yours is 87 bytes where this says 88, that is the
 newline.
@@ -623,20 +623,23 @@ $ tm-cli sign --api-key TESTAPIKEY0123456789 \
 `--method` defaults to `GET` and is upper-cased. `--date` defaults to now, in RFC 1123 GMT.
 `--url` must be absolute, including the scheme, or you get a usage error naming the problem.
 
-### `sign` does not read the environment
+### What `sign` does and does not read
 
-**`sign` is the one command that takes its API key only from `--api-key`.** It never
-resolves configuration, because it has no TM connection to configure — so `TM_API_KEY` and
-`--config` do not reach it, and neither does `--address`. Every input comes from the command
-line:
+The API key resolves the same way as everywhere else — `--api-key`, then `TM_API_KEY`,
+then the `--config` file — so an exported key works without repeating it:
 
 ```
 $ export TM_API_KEY=TESTAPIKEY0123456789
-$ tm-cli sign --url http://127.0.0.1:8151/api/event --token abc123
-error: --api-key is required for `tm-cli sign`.
+$ tm-cli sign --url http://192.168.1.50/api/event --token abc123
+...
+signature:  d9d23e9e1b523ad8af372c6efc7a048e4f00fafc4c59b50d47fed147c0e41ee0
 ```
 
-That trips people up exactly once. Pass `--api-key "$TM_API_KEY"` and move on.
+With none of the three, it exits 2 naming both sources it accepts.
+
+`--address` is genuinely inert here, and that is not an oversight: `sign` signs the URL
+you pass to `--url`, and taking a host from anywhere else would defeat the point of a
+command whose job is to show you exactly what a given URL produces.
 
 ### Using it against a live 401
 

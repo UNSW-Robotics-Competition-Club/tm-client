@@ -247,7 +247,7 @@ $ tm-cli sign --api-key TESTAPIKEY0123456789 \
     --token abc123 --date 'Tue, 11 Aug 2026 03:14:00 GMT'
 escaped:    GET\n/api/event\ntoken:abc123\nhost:127.0.0.1:8151\nx-tm-date:Tue, 11 Aug 2026 03:14:00 GMT\n
 bytes:      88
-trailing newline: present
+lines:      5, ending with a newline (compare yours)
 ```
 
 **2. `clock_skew` — this machine's clock is too far from TM's.** The `x-tm-date` header is

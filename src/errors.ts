@@ -30,6 +30,13 @@ export type TmErrorCode =
 	// Request signing / authorization
 	| "invalid_signature"
 	| "clock_skew"
+	/**
+	 * Never produced by this package: TM does not distinguish an expired token
+	 * from any other rejected signature, so a 401 becomes `invalid_signature` or
+	 * `clock_skew` instead. It is kept as vocabulary for a consumer-written
+	 * `AuthProvider` whose own issuer *can* say so, and it invalidates the
+	 * cached bearer like the others, so returning it does the right thing.
+	 */
 	| "token_expired"
 	// Generic
 	| "http_error"
