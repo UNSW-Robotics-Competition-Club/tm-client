@@ -1,0 +1,75 @@
+{
+  "_comment": "Golden vectors for the VEX TM Public API request signer.\n\nVectors 1-6 are copied VERBATIM from obs-plugin/test/signer-vectors.json, which is\nalready shared between that repo's C++ signer (src/tm/tm-signer.cpp, pinned by\ntest/test-signer.cpp) and its JS reference signer (test/tm-sign.mjs). Reusing them\nunchanged is what stops this third implementation drifting from those two. Do not\nedit or reorder them: a diff here means either the upstream algorithm changed or we\nhave a bug.\n\nVector 7 is new to this repo and covers multi-byte UTF-8 in the HMAC key and in the\nsigned message, which the inherited six do not exercise at all. It was generated\nwith node:crypto's createHmac rather than with src/signing.ts, so the fixture is\nderived independently of the code it tests.",
+  "vectors": [
+    {
+      "name": "event resource, default port",
+      "method": "GET",
+      "url": "http://192.168.1.50/api/event",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token",
+      "tmDate": "Tue, 11 Aug 2026 03:14:00 GMT",
+      "apiKey": "TESTAPIKEY0123456789",
+      "stringToSign": "GET\n/api/event\ntoken:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token\nhost:192.168.1.50\nx-tm-date:Tue, 11 Aug 2026 03:14:00 GMT\n",
+      "expectedSignature": "d9d23e9e1b523ad8af372c6efc7a048e4f00fafc4c59b50d47fed147c0e41ee0"
+    },
+    {
+      "name": "matches resource with division path segment",
+      "method": "GET",
+      "url": "http://192.168.1.50/api/matches/1",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token",
+      "tmDate": "Tue, 11 Aug 2026 03:14:00 GMT",
+      "apiKey": "TESTAPIKEY0123456789",
+      "stringToSign": "GET\n/api/matches/1\ntoken:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token\nhost:192.168.1.50\nx-tm-date:Tue, 11 Aug 2026 03:14:00 GMT\n",
+      "expectedSignature": "72af98cebc5205f7dedf91331fd5b4ad9c7d376e956188a7321488626eed95d7"
+    },
+    {
+      "name": "non-default port 8080 (host must include the port)",
+      "method": "GET",
+      "url": "http://192.168.1.50:8080/api/fieldsets",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token",
+      "tmDate": "Tue, 11 Aug 2026 03:14:00 GMT",
+      "apiKey": "TESTAPIKEY0123456789",
+      "stringToSign": "GET\n/api/fieldsets\ntoken:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token\nhost:192.168.1.50:8080\nx-tm-date:Tue, 11 Aug 2026 03:14:00 GMT\n",
+      "expectedSignature": "75fe3ad24eedb1c67cd745afc082b4455133d5b157738d73e3cc35adf1b1cab5"
+    },
+    {
+      "name": "websocket upgrade path for a field set",
+      "method": "GET",
+      "url": "http://192.168.1.50/api/fieldsets/1",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token",
+      "tmDate": "Wed, 12 Aug 2026 22:05:31 GMT",
+      "apiKey": "TESTAPIKEY0123456789",
+      "stringToSign": "GET\n/api/fieldsets/1\ntoken:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token\nhost:192.168.1.50\nx-tm-date:Wed, 12 Aug 2026 22:05:31 GMT\n",
+      "expectedSignature": "1f4f9bd2c1a7b1c5771ba29b8a8a6dd4fdf144196f7d62f958bf3ceb2200e4e0"
+    },
+    {
+      "name": "query string is part of the signed path",
+      "method": "GET",
+      "url": "http://tm.local/api/rankings/1/QUAL?foo=bar",
+      "token": "short.token",
+      "tmDate": "Tue, 11 Aug 2026 03:14:00 GMT",
+      "apiKey": "another-key-!@#$%^&*()",
+      "stringToSign": "GET\n/api/rankings/1/QUAL?foo=bar\ntoken:short.token\nhost:tm.local\nx-tm-date:Tue, 11 Aug 2026 03:14:00 GMT\n",
+      "expectedSignature": "797a891e513d06dd45c76c14901e06162ebc18a91b02d976d48ce21612acbe09"
+    },
+    {
+      "name": "hostname rather than IP",
+      "method": "GET",
+      "url": "http://tm-server.lan/api/divisions",
+      "token": "short.token",
+      "tmDate": "Wed, 01 Jan 2025 00:00:00 GMT",
+      "apiKey": "k",
+      "stringToSign": "GET\n/api/divisions\ntoken:short.token\nhost:tm-server.lan\nx-tm-date:Wed, 01 Jan 2025 00:00:00 GMT\n",
+      "expectedSignature": "dbe1c67e2097e5b9056d1fd9173e1ffc6ff0e953402eebf390e4b4606202e367"
+    },
+    {
+      "name": "multi-byte UTF-8 in the API key and token",
+      "method": "GET",
+      "url": "http://192.168.1.50:8080/api/teams/1",
+      "token": "tøken.Ωmega.日本語.🤖",
+      "tmDate": "Tue, 11 Aug 2026 03:14:00 GMT",
+      "apiKey": "clé-privée-€-日本語-🤖",
+      "stringToSign": "GET\n/api/teams/1\ntoken:tøken.Ωmega.日本語.🤖\nhost:192.168.1.50:8080\nx-tm-date:Tue, 11 Aug 2026 03:14:00 GMT\n",
+      "expectedSignature": "9a2e7a55223966f39a9300565dd8fb99498aa8ed6af488e939d201627fad8b1b"
+    }
+  ]
+}
