@@ -182,6 +182,25 @@ node test/tier0.mjs    # also: bun test/tier0.mjs
 pnpm mock-tm           # a mock TM that actually validates signatures
 ```
 
+### Smoke-testing a real TM
+
+```bash
+TM_SMOKE_ADDRESS=http://192.168.1.50 \
+TM_SMOKE_API_KEY=... \
+TM_SMOKE_CERBERUS_KEY=ctm_... \
+pnpm smoke
+```
+
+Not part of `pnpm test` — it needs LAN access to a specific machine and real
+credentials, and skips cleanly (exit 0) when the env vars are absent. It runs read-only
+first, then reports clock skew, then listens on a field set socket. It sends nothing
+unless you add `TM_SMOKE_ALLOW_COMMANDS=yes`, and even then only `setAudienceDisplay`,
+restoring the previous value afterwards — it changes what a screen shows and touches no
+match state.
+
+**Use a throwaway event for the command phase.** Never run it against a field with
+robots on it.
+
 The signer is pinned to golden vectors shared with the C++ implementation in the
 obs-plugin repo, so a third implementation cannot quietly drift from the other two. One
 vector carries multi-byte UTF-8 in the key and token, which is the one input shape where

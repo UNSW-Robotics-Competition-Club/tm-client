@@ -33,7 +33,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "tier0": "node test/tier0.mjs",
-    "mock-tm": "tsx test/mocks/cli.ts"
+    "mock-tm": "tsx test/mocks/cli.ts",
+    "smoke": "tsx scripts/smoke-real-tm.ts"
   },
   "dependencies": {
     "commander": "^13.0.0"
