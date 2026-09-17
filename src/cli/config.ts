@@ -20,7 +20,7 @@ import { TmConfigError } from "../errors.js";
 export const DEFAULT_ADDRESS = "http://127.0.0.1";
 
 /** SRA's public broker. Anyone running their own overrides it. */
-export const DEFAULT_CERBERUS_ENDPOINT = "https://tm.sydneyrobotics.com.au";
+export const DEFAULT_CERBERUS_ENDPOINT = "https://tm.unswrobotics.com";
 
 /**
  * Reported to Cerberus, which refuses builds older than its floor. Kept as a

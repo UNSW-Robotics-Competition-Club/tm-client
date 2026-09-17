@@ -14,7 +14,7 @@ const tm = new TmClient({
   baseUrl: "http://192.168.1.50",       // the TM laptop
   apiKey: process.env.TM_API_KEY,       // from TM: Tools > Options > Web Publishing
   auth: createCerberusAuth({
-    endpoint: "https://tm.sydneyrobotics.com.au",
+    endpoint: "https://tm.unswrobotics.com",
     apiKey: process.env.TM_CERBERUS_KEY,
     build: { version: "0.1.0" },
   }),
@@ -173,7 +173,7 @@ settle step one of a 401 investigation.
 
 ```bash
 pnpm install
-pnpm test          # 279 tests
+pnpm test          # 281 tests
 pnpm typecheck
 pnpm lint
 pnpm build

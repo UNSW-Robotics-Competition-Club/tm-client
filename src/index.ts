@@ -15,7 +15,7 @@
  *     import { TmClient, createCerberusAuth } from "@unsw-rcc/tm-client";
  *
  *     const auth = createCerberusAuth({
- *       endpoint: "https://tm.sydneyrobotics.com.au",
+ *       endpoint: "https://tm.unswrobotics.com",
  *       apiKey: process.env.TM_CERBERUS_KEY,
  *       build: { version: "0.1.0" },
  *     });

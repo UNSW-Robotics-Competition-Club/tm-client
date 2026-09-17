@@ -53,7 +53,7 @@ function buildAuth(): AuthProvider {
 	const cerberusKey = env["TM_SMOKE_CERBERUS_KEY"];
 	if (cerberusKey) {
 		return createCerberusAuth({
-			endpoint: env["TM_SMOKE_CERBERUS_ENDPOINT"] ?? "https://tm.sydneyrobotics.com.au",
+			endpoint: env["TM_SMOKE_CERBERUS_ENDPOINT"] ?? "https://tm.unswrobotics.com",
 			apiKey: cerberusKey,
 			build: { version: "0.1.0-smoke" },
 		});

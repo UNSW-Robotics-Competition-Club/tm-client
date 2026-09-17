@@ -26,7 +26,7 @@ const KEY_PATTERN = /^ctm_[0-9a-fA-F]{16}_[0-9a-fA-F]{48}$/;
 const DEFAULT_MARGIN_MS = 300_000;
 
 export interface CerberusAuthOptions {
-	/** Base URL, e.g. `https://tm.sydneyrobotics.com.au`. */
+	/** Base URL, e.g. `https://tm.unswrobotics.com`. */
 	endpoint: string;
 	/** The client key, `ctm_<16 hex>_<48 hex>`. One per distributed build. */
 	apiKey: string;
