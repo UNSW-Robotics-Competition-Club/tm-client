@@ -13,7 +13,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import WebSocket from "ws";
 
 import { buildAuthHeaders, signTmRequest } from "../../src/signing.js";
-import type { Ranking, SkillsRanking } from "../../src/types.js";
+import type { Ranking, SkillsRanking, Team } from "../../src/types.js";
 import {
 	API_KEY,
 	CERBERUS_KEY,
@@ -194,6 +194,23 @@ describe("REST resources", () => {
 
 		expect(body.teams.length).toBeGreaterThan(0);
 		expect(body.teams.every((t) => t.divId === 2)).toBe(true);
+	});
+
+	it("serves teams in the shape src/types.ts declares", async () => {
+		// The fixture said `region` where the type and the API guide both say
+		// `state`. Nothing caught it: the endpoint still returned 200, and the
+		// CLI's LOCATION column simply omitted an undefined field rather than
+		// failing. Same class of drift as the rankings fixture below.
+		const tm = await start();
+		const token = await mintToken(tm);
+
+		const response = await signedGet(tm, "/api/teams", token);
+		const body = (await response.json()) as { teams: Team[] };
+		const first = body.teams[0]!;
+
+		expect(first.state).toBeTypeOf("string");
+		expect(first.state.length).toBeGreaterThan(0);
+		expect(first).not.toHaveProperty("region");
 	});
 
 	it("serves rankings in the shape src/types.ts declares", async () => {
