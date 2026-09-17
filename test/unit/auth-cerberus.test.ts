@@ -218,15 +218,42 @@ describe("createCerberusAuth failure mapping", () => {
 		expect(calls).toHaveLength(1);
 	});
 
-	it("prefers the server's own message for upgrade_required", async () => {
+	it("names the version floor for upgrade_required", async () => {
+		// The REAL server shape. Cerberus's message is generic and the number
+		// lives in a separate `minimum` field (see its src/errors.ts
+		// `upgradeRequired`), so an operator told only the message learns they
+		// are too old but not what is new enough. This asserts both halves reach
+		// them. An earlier version of this test invented a message that already
+		// contained the version, which is why the gap survived being tested.
 		const { fetchStub } = stubFetch(() =>
-			json(426, { error: "upgrade_required", message: "Minimum version is 2.0.0." }),
+			json(426, {
+				error: "upgrade_required",
+				message: "Client version below the supported minimum",
+				minimum: "2.0.0",
+			}),
 		);
 		const auth = createCerberusAuth({ endpoint: ENDPOINT, apiKey: KEY, build: BUILD, fetch: fetchStub });
 
 		await auth.getBearer();
 
-		expect(auth.lastFailure()).toBe("Minimum version is 2.0.0.");
+		const failure = auth.lastFailure();
+		expect(failure).toContain("Client version below the supported minimum");
+		expect(failure).toContain("2.0.0");
+		// The build that was refused is as useful as the floor it fell short of.
+		expect(failure).toContain(BUILD.version);
+	});
+
+	it("falls back to the bare server message when no minimum is given", async () => {
+		// A Cerberus old enough to predate the `minimum` field, or any future
+		// refusal that omits it, must still produce a usable sentence.
+		const { fetchStub } = stubFetch(() =>
+			json(426, { error: "upgrade_required", message: "Client version below the supported minimum" }),
+		);
+		const auth = createCerberusAuth({ endpoint: ENDPOINT, apiKey: KEY, build: BUILD, fetch: fetchStub });
+
+		await auth.getBearer();
+
+		expect(auth.lastFailure()).toBe("Client version below the supported minimum");
 	});
 
 	it("clears lastFailure once a mint succeeds", async () => {

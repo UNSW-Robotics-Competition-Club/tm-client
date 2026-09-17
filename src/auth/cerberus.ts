@@ -126,10 +126,18 @@ export function createCerberusAuth(o: CerberusAuthOptions): CerberusAuth {
 				detail: body ?? named,
 				httpStatus: response.status,
 			};
-			// Cerberus names the minimum version it will serve, which is more use to
-			// the operator than our generic "update to the current release".
+			// Cerberus reports the version floor as a separate `minimum` field; its
+			// own message is the bare "Client version below the supported minimum",
+			// which tells an operator they are too old without telling them what is
+			// new enough. Compose the two, so the message names the number they
+			// actually need. Read from the body rather than asking the server to
+			// change its string: the value is already on the wire, so this works
+			// against the deployed Worker with no redeploy.
 			if (code === "cerberus_upgrade_required" && serverMessage) {
-				options.operatorMessage = serverMessage;
+				const minimum = stringField(body, "minimum");
+				options.operatorMessage = minimum
+					? `${serverMessage} (minimum ${minimum}, this build is ${o.build.version}).`
+					: serverMessage;
 			}
 			return fail(code, serverMessage ?? `Cerberus returned ${response.status}`, options);
 		}
