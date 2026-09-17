@@ -428,6 +428,19 @@ async function openFieldSetSocket(tm: MockTmServer, fieldSetId: number): Promise
 }
 
 function onceOpen(socket: WebSocket): Promise<void> {
+	// Check the state before listening. Callers routinely await something else
+	// between constructing a socket and getting here — opening a second socket
+	// mints another token, which is a full HTTP round trip — and a `once`
+	// listener attached after "open" has already fired waits forever, surfacing
+	// as an unexplained test timeout rather than a connection failure.
+	//
+	// The mock's own waitForClient is guarded the same way and says so; this
+	// helper was the one that was not, and it flaked on CI where the mint is
+	// slow relative to the handshake.
+	if (socket.readyState === WebSocket.OPEN) return Promise.resolve();
+	if (socket.readyState === WebSocket.CLOSING || socket.readyState === WebSocket.CLOSED) {
+		return Promise.reject(new Error("socket closed before it was awaited"));
+	}
 	return new Promise((resolve, reject) => {
 		socket.once("open", () => resolve());
 		socket.once("error", reject);
@@ -527,8 +540,13 @@ describe("field set websocket", () => {
 
 	it("routes events per field set", async () => {
 		const tm = await start();
-		const one = await openFieldSetSocket(tm, 1);
-		const two = await openFieldSetSocket(tm, 2);
+		// Opened together rather than one after the other: sequentially, the
+		// second mint gives the first socket time to finish connecting before
+		// anything is listening for it.
+		const [one, two] = await Promise.all([
+			openFieldSetSocket(tm, 1),
+			openFieldSetSocket(tm, 2),
+		]);
 		await Promise.all([onceOpen(one), onceOpen(two)]);
 		await Promise.all([tm.waitForClient(1), tm.waitForClient(2)]);
 
