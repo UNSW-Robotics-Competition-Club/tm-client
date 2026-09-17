@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # The main gate. Everything here runs against test/mocks/mock-tm-server.ts, so
+  # CI needs no TM instance, no DWAB credentials and no network.
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build
+
+      # The rule that makes this package isomorphic is not enforceable by types.
+      # If a node: import or the `ws` package reaches the library entry point,
+      # this is where it surfaces — esbuild resolves the real import graph of the
+      # BUILT artifact, which is the thing consumers actually load.
+      - name: library entry must bundle for a browser
+        run: npx esbuild dist/index.js --bundle --platform=browser --outfile=/dev/null --log-level=warning
+
+      # `ws` is an optionalDependency, which tsup does NOT externalise by default.
+      # An inlined copy dies on its native-addon loading, and no source-level test
+      # can see it because the suites import from src/. So assert the built CLI
+      # keeps `ws` as a real runtime import.
+      - name: ws must stay external in the build
+        run: |
+          if grep -rq "bufferutil\|utf-8-validate" dist/; then
+            echo "::error::ws was inlined into the bundle; check tsup external config"
+            exit 1
+          fi
+
+  # Tier 0 is the only thing that proves the signing core behaves identically
+  # across runtimes. A test runner would mostly prove the runner is portable, so
+  # this file is framework-free and runs directly under each target.
+  tier0:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runtime: node
+          - runtime: bun
+    runs-on: ubuntu-latest
+    name: tier0 (${{ matrix.runtime }})
+    steps:
+      - uses: actions/checkout@v4
+
+      - if: matrix.runtime == 'node'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - if: matrix.runtime == 'bun'
+        uses: oven-sh/setup-bun@v2
+
+      # No install step on purpose: tier0 has zero dependencies, and running it
+      # against a bare checkout proves that.
+      - run: ${{ matrix.runtime }} test/tier0.mjs
+
+  # The CLI is a Node binary and the only consumer that exercises the built
+  # artifact end to end. The `ws` inlining bug was invisible to all 281 tests and
+  # only appeared when the built `tm-cli send` actually tried to open a socket.
+  cli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
+      - name: drive the built CLI against a mock TM
+        run: |
+          npx tsx test/mocks/cli.ts --port 8181 &
+          # Note: no -f. An unauthenticated probe is answered 401, which is the
+          # mock behaving correctly — `curl -f` would treat that as failure and
+          # spin out the whole loop. Any response at all means it is listening.
+          for _ in $(seq 1 30); do
+            curl -s -o /dev/null "http://127.0.0.1:8181/api/event" && break || sleep 0.5
+          done
+
+          export TM_ADDRESS=http://127.0.0.1:8181
+          export TM_API_KEY=TESTAPIKEY0123456789
+          export TM_CERBERUS_ENDPOINT=http://127.0.0.1:8181
+          export TM_CERBERUS_KEY=ctm_0123456789abcdef_0123456789abcdef0123456789abcdef0123456789abcdef
+
+          node dist/cli/main.js event
+          node dist/cli/main.js fieldsets --json
+          node dist/cli/main.js rankings 1 QUAL
+          node dist/cli/main.js token
+          # The one that caught the inlined-ws bug: it opens a real socket.
+          node dist/cli/main.js send 1 queueNextMatch
+
+      - name: smoke script must skip cleanly without credentials
+        # It is safe to invoke anywhere precisely because absent TM_SMOKE_* vars
+        # are a skip rather than a failure. If that ever regresses, CI goes red
+        # here instead of at an event.
+        run: pnpm smoke

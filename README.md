@@ -62,7 +62,6 @@ on a WebSocket handshake.** The spec forbids it. There is no workaround.
 |---|---|---|
 | Node 22+ | yes | yes, via the optional `ws` package |
 | Bun | yes | yes, via Bun's non-standard `{ headers }` form |
-| Deno | yes | no — its `WebSocket` cannot set headers |
 | Cloudflare Workers | yes | yes, but you must pass a `WebSocketFactory` using `fetch` + `Upgrade` |
 | Browser / Electron renderer | see below | **no, and no workaround exists** |
 
@@ -206,9 +205,11 @@ obs-plugin repo, so a third implementation cannot quietly drift from the other t
 vector carries multi-byte UTF-8 in the key and token, which is the one input shape where
 WebCrypto (which takes bytes) and `node:crypto` (which takes the string) could disagree.
 
-`test/tier0.mjs` is framework-free and runs under node, bun and deno, because proving
-cross-runtime behaviour with a test runner mostly proves the runner is portable. Deno is
-currently unverified — it is not installed on the development machine.
+`test/tier0.mjs` is framework-free and runs under both node and bun, because proving
+cross-runtime behaviour with a test runner mostly proves the runner is portable. The
+package targets only the runtimes listed above; if you need another, run tier-0 under it
+first — it is the fastest way to find out whether the signing core behaves identically
+there.
 
 An eslint rule keeps `node:*` out of the isomorphic core, and
 `esbuild --platform=browser` on the built entry point is checked to emit no warnings.

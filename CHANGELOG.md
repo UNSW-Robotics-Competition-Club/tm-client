@@ -53,8 +53,6 @@ Two bugs confirmed in the surviving upstream source:
 
 ### Known gaps
 
-- **Deno is untested.** The support matrix claims REST works there; it is not installed on
-  the development machine, so that row is unverified.
 - **The CLI's SIGINT path is unexercised.** Git Bash cannot deliver a signal a native
   Windows Node process receives. The handler is three lines and also listens for SIGTERM.
 - `send()` resolving `ok` means *written to the socket*, not *applied by TM*. Correlating
