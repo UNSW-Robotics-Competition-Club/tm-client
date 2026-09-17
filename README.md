@@ -1,4 +1,4 @@
-# @unsw-rcc/tm-client
+# @unsw-robotics-competition-club/tm-client
 
 Isomorphic TypeScript client and CLI for the **VEX Tournament Manager Public API**.
 
@@ -8,7 +8,7 @@ websocket with reconnect, and an error taxonomy that tells an operator what to a
 do about each failure.
 
 ```ts
-import { TmClient, createCerberusAuth, remedy } from "@unsw-rcc/tm-client";
+import { TmClient, createCerberusAuth, remedy } from "@unsw-robotics-competition-club/tm-client";
 
 const tm = new TmClient({
   baseUrl: "http://192.168.1.50",       // the TM laptop
@@ -45,7 +45,7 @@ It also fixes two bugs confirmed in the surviving upstream source:
 ## Install
 
 ```bash
-npm install @unsw-rcc/tm-client     # add `ws` too if you need the field set websocket
+npm install @unsw-robotics-competition-club/tm-client     # add `ws` too if you need the field set websocket
 ```
 
 ## Runtime support
@@ -122,8 +122,8 @@ the operator needs told, and would let an untrusted response header steer what g
 ## Field set websocket
 
 ```ts
-import { FieldsetSocket } from "@unsw-rcc/tm-client";
-import { createNodeWebSocketFactory } from "@unsw-rcc/tm-client/node";
+import { FieldsetSocket } from "@unsw-robotics-competition-club/tm-client";
+import { createNodeWebSocketFactory } from "@unsw-robotics-competition-club/tm-client/node";
 
 const socket = new FieldsetSocket({
   http: tm.http,

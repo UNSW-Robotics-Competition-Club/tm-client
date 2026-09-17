@@ -5,7 +5,7 @@
  * the optional `ws` dependency. Import this to drive a field set socket:
  *
  * ```ts
- * import { createNodeWebSocketFactory } from "@unsw-rcc/tm-client/node";
+ * import { createNodeWebSocketFactory } from "@unsw-robotics-competition-club/tm-client/node";
  * const socket = new FieldsetSocket({ http, fieldSetId, webSocketFactory: await createNodeWebSocketFactory() });
  * ```
  *

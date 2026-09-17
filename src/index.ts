@@ -1,5 +1,5 @@
 /**
- * @unsw-rcc/tm-client — isomorphic client for the VEX Tournament Manager Public API.
+ * @unsw-robotics-competition-club/tm-client — isomorphic client for the VEX Tournament Manager Public API.
  *
  * Everything exported here runs anywhere `fetch`, `URL` and `crypto.subtle`
  * exist: Node, Bun, Deno, Cloudflare Workers, and browsers.
@@ -10,9 +10,9 @@
  * exported here, but it ships no default transport: under Node or Bun it finds
  * one itself, and anywhere else you pass a `WebSocketFactory` or it returns
  * `ws_headers_unsupported`. Node users can import the ready-made factory from
- * `@unsw-rcc/tm-client/node`.
+ * `@unsw-robotics-competition-club/tm-client/node`.
  *
- *     import { TmClient, createCerberusAuth } from "@unsw-rcc/tm-client";
+ *     import { TmClient, createCerberusAuth } from "@unsw-robotics-competition-club/tm-client";
  *
  *     const auth = createCerberusAuth({
  *       endpoint: "https://tm.unswrobotics.com",

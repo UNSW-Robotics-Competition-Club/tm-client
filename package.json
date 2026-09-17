@@ -1,5 +1,5 @@
 {
-  "name": "@unsw-rcc/tm-client",
+  "name": "@unsw-robotics-competition-club/tm-client",
   "version": "0.1.0",
   "description": "Isomorphic TypeScript client and CLI for the VEX Tournament Manager Public API",
   "license": "MIT",
